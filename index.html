@@ -210,7 +210,8 @@
 
   // === Spotify API helpers ===
   async function spGet(url){ await ensureToken(); const r=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(r.status===401){ await ensureToken(); const r2=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r2.ok) throw new Error('Spotify API '+r2.status); return r2.json(); } if(!r.ok) throw new Error('Spotify API '+r.status); return r.json(); }
-  async function spPut(url, body){ await ensureToken(); const r=await fetch(url,{ method:'PUT', headers:{ Authorization:`Bearer ${state.access_token}`, 'Content-Type':'application/json' }, body: body? JSON.stringify(body): undefined }); if(r.status===204) return; if(!r.ok){ const t=await r.text(); throw new Error('Spotify PUT '+r.status+' '+t); } return r.json(); }
+  async function spPut(url, body){ await ensureToken(); const r=await fetch(url,{ method:'PUT', headers:{ Authorization:`Bearer ${state.access_token}`, 'Content-Type':'application/json' }, body: body? JSON.stringify(body): undefined }); if(r.status===204) return {ok:true}; const txt = await r.text(); if(!r.ok) throw new Error('STATUS '+r.status+' '+txt); try{ return JSON.parse(txt); }catch{ return {ok:r.ok, body:txt}; }
+  }
 
   // === Chargement playlist ===
   async function loadPlaylist(){
@@ -229,8 +230,7 @@
         for(const it of data.items||[]){
           const t = it.track; if(!t || t.is_local) continue; // pas de local
           const year = (t.album?.release_date||'').slice(0,4) || '';
-          // En mode preview: on ne garde que ceux avec preview_url
-          if(!state.usingSdk && !t.preview_url) continue;
+          if(!state.usingSdk && !t.preview_url) continue; // en mode preview, on exclut sans preview
           acc.push({ title: t.name, artists: (t.artists||[]).map(a=>a.name).join(', '), preview: t.preview_url, cover: (t.album?.images||[])[0]?.url || '', year, album: t.album?.name || '', uri: t.uri });
           if(acc.length >= maxWant) break;
         }
@@ -252,7 +252,7 @@
   }
 
   // === Web Playback SDK ===
-  window.onSpotifyWebPlaybackSDKReady = () => { /* Le SDK est chargé, on activera lors du clic */ };
+  window.onSpotifyWebPlaybackSDKReady = () => { /* SDK ready */ };
 
   async function initSdkPlayer(){
     try{
@@ -261,7 +261,7 @@
       const player = new Spotify.Player({ name: 'Blindtest Web Player', getOAuthToken: cb => cb(state.access_token), volume: 1 });
       state.sdkPlayer = player;
 
-      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = 'Lecteur prêt'; toast('Lecteur web prêt ✅'); });
+      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = 'Lecteur prêt'; });
       player.addListener('not_ready', ({ device_id }) => { if(state.device_id===device_id) state.device_id=null; els.playerState.textContent = 'Lecteur indisponible'; });
       player.addListener('initialization_error', ({ message }) => toast('Init error: '+message));
       player.addListener('authentication_error', ({ message }) => toast('Auth error: '+message));
@@ -270,19 +270,44 @@
       const ok = await player.connect();
       if(!ok){ toast('Impossible de connecter le lecteur'); return; }
 
-      // Transférer la lecture sur ce device
-      await transferToWebPlayer();
-      els.playerState.textContent = 'Lecteur actif';
+      await transferToWebPlayer(true); // force as active + wait
+      els.playerState.textContent = 'Lecteur actif'; toast('Lecteur web prêt ✅');
     }catch(e){ console.error(e); toast('Erreur d\'initialisation du lecteur.'); }
   }
 
-  async function transferToWebPlayer(){ if(!state.device_id) return; try{ await spPut('https://api.spotify.com/v1/me/player', { device_ids:[state.device_id], play:false }); }catch(e){ console.warn('transfer failed', e); toast('Ouvre Spotify sur un autre appareil puis réessaie'); } }
+  async function spGetJson(url){ const r = await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r.ok) throw new Error('GET '+r.status); return r.json(); }
+
+  async function transferToWebPlayer(waitActive=false){
+    if(!state.device_id) return;
+    await spPut('https://api.spotify.com/v1/me/player', { device_ids:[state.device_id], play:false });
+    if(waitActive){
+      // Attendre que le device devienne actif
+      for(let i=0;i<10;i++){
+        try{
+          const d = await spGetJson('https://api.spotify.com/v1/me/player/devices');
+          const me = (d.devices||[]).find(x=>x.id===state.device_id);
+          if(me && me.is_active) return true;
+        }catch{}
+        await sleep(400);
+      }
+    }
+    return true;
+  }
 
   async function playSdkTrack(uri){
-    if(!state.device_id){ toast('Lecteur non prêt'); throw new Error('no device'); }
-    await spPut(`https://api.spotify.com/v1/me/player/play?device_id=${state.device_id}`, { uris:[uri], position_ms: 0 });
+    if(!state.device_id){ throw new Error('NO_DEVICE'); }
+    try{
+      const res = await spPut(`https://api.spotify.com/v1/me/player/play?device_id=${state.device_id}`, { uris:[uri], position_ms: 0 });
+      return res;
+    }catch(e){
+      // Détecter les erreurs courantes
+      const msg = String(e.message||'');
+      if(msg.includes('STATUS 403')) throw new Error('PREMIUM_REQUIRED');
+      if(msg.includes('STATUS 404')) throw new Error('NO_ACTIVE_DEVICE');
+      throw e;
+    }
   }
-  async function pauseSdk(){ try{ await spPut(`https://api.spotify.com/v1/me/player/pause?device_id=${state.device_id}`); }catch(e){ /* ignore */ } }
+  async function pauseSdk(){ try{ await spPut(`https://api.spotify.com/v1/me/player/pause?device_id=${state.device_id}`); }catch(e){} }
   async function setSdkVolume(vol){ try{ if(state.sdkPlayer) await state.sdkPlayer.setVolume(clamp(vol,0,1)); }catch(e){} }
 
   // === Jeu ===
@@ -290,46 +315,67 @@
   function updateCounter(){ const total=state.tracks.length; els.counter.textContent = `${Math.min(state.i+1,total)} / ${total}`; }
   async function showIntro(){ renderIntro(); setProgress(0); await runPhase(INTRO_MS); }
 
-  function playCurrent(){
+  async function playCurrent(){
     if(state.i >= state.tracks.length) return finish();
     updateCounter(); const t = state.tracks[state.i]; renderGuess(t);
 
     if(state.usingSdk){
-      // Lecture via SDK (vrai morceau)
-      playSdkTrack(t.uri).then(()=>{
+      try{
+        // S'assurer que notre device est actif
+        await transferToWebPlayer(true);
+        await playSdkTrack(t.uri);
+
         // Phase devine 10s
-        runPhase(GUESS_MS, p=>setProgress(p)).then(async ()=>{
-          // Phase réponse avec lecture qui continue + fade-out volume SDK
-          renderAnswer(t);
-          const endAt = performance.now() + ANSWER_MS;
-          const vol0 = 1; // on part à 1
-          function tick(){
-            const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/ANSWER_MS);
-            if(remain <= FADE_OUT_MS){ const f = clamp(remain/FADE_OUT_MS,0,1); setSdkVolume(vol0*f); }
-            if(remain>16){ requestAnimationFrame(tick); } else { nextTrack(); }
-          }
+        await runPhase(GUESS_MS, p=>setProgress(p));
+
+        // Phase réponse + fade SDK
+        renderAnswer(t);
+        const endAt = performance.now() + ANSWER_MS; const vol0=1;
+        await new Promise((resolve)=>{
+          function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/ANSWER_MS); if(remain <= FADE_OUT_MS){ const f = clamp(remain/FADE_OUT_MS,0,1); setSdkVolume(vol0*f); } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } }
           requestAnimationFrame(tick);
         });
-      }).catch(err=>{ console.error(err); toast('Lecture impossible (Premium requis ?)'); nextTrack(); });
+        await pauseSdk(); await setSdkVolume(1);
+        nextTrack();
+      }catch(err){
+        console.warn('SDK play failed', err);
+        if(t.preview){
+          toast('Lecteur Premium indisponible — bascule sur l\'extrait 30s.');
+          await fallbackPreviewFlow(t);
+          return;
+        } else {
+          toast(err.message==='PREMIUM_REQUIRED' ? 'Lecture impossible (Premium requis)' : 'Lecture impossible sur le lecteur web');
+          // Petite pause pour éviter le défilement instantané
+          await sleep(1200);
+          nextTrack();
+          return;
+        }
+      }
     } else {
-      // Mode preview 30s
-      playPreview(t.preview);
-      runPhase(GUESS_MS, p=>setProgress(p)).then(()=>{
-        renderAnswer(t);
-        const endAt = performance.now() + ANSWER_MS; const fadeStart = endAt - FADE_OUT_MS; const a = els.player; const vol0=a.volume;
-        function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/ANSWER_MS); if(now>=fadeStart){ const f=clamp(1 - (now - fadeStart)/FADE_OUT_MS,0,1); a.volume = vol0*f; } if(remain>16){ requestAnimationFrame(tick); } else { nextTrack(); } }
-        requestAnimationFrame(tick);
-      });
+      await fallbackPreviewFlow(t);
     }
+  }
+
+  async function fallbackPreviewFlow(t){
+    if(!t.preview){ await sleep(500); nextTrack(); return; }
+    playPreview(t.preview);
+    await runPhase(GUESS_MS, p=>setProgress(p));
+    renderAnswer(t);
+    const endAt = performance.now() + ANSWER_MS; const fadeStart = endAt - FADE_OUT_MS; const a = els.player; const vol0=a.volume;
+    await new Promise((resolve)=>{
+      function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/ANSWER_MS); if(now>=fadeStart){ const f=clamp(1 - (now - fadeStart)/FADE_OUT_MS,0,1); a.volume = vol0*f; } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } }
+      requestAnimationFrame(tick);
+    });
+    nextTrack();
   }
 
   function nextTrack(){ stopAll(); state.i++; updateCounter(); if(state.i < state.tracks.length){ playCurrent(); } else { finish(); } }
 
-  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class="cover"><img alt="Playlist cover" src="${state.playlist?.images?.[0]?.url||''}"></div><div><div class="title">Fin du blindtest 🎉</div><div class="subtitle">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class="meta" style="margin-top:12px">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
+  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||''}\"></div><div><div class=\"title\">Fin du blindtest 🎉</div><div class=\"subtitle\">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class=\"meta\" style=\"margin-top:12px\">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
 
-  function renderIntro(){ els.screen.innerHTML = `<div class="cover"><img alt="Playlist cover" src="${state.playlist?.images?.[0]?.url||''}"></div><div><div class="subtitle">Prépare tes oreilles…</div><div class="title">${state.playlist?.name||'Ta playlist'}</div><div class="rules"><div>🕒 Intro 10s • Puis 10s d\'écoute / 10s de réponse par titre</div><div>🏆 1 point par <strong>artiste</strong> + 1 point par <strong>titre</strong></div><div>🎵 Jusqu\'à ${state.tracks.length} titre(s)</div></div></div>`; }
-  function renderGuess(t){ els.screen.innerHTML = `<div class="cover blur"><img alt="Cover cachée" src="${t.cover}"></div><div><div class="subtitle">Extrait ${state.i+1}/${state.tracks.length} — 10 secondes</div><div class="title">???</div><div class="meta">Trouve l\'artiste et le titre</div></div>`; }
-  function renderAnswer(t){ els.screen.innerHTML = `<div class="cover"><img alt="Cover" src="${t.cover}"></div><div><div class="subtitle">Réponse • ${t.year ? t.year+' • ' : ''}${t.album ? t.album : ''}</div><div class="title">${escapeHTML(t.title)}</div><div class="meta">${escapeHTML(t.artists)}</div><div class="meta" style="margin-top:8px">L\'extrait continue ~10s</div></div>`; }
+  function renderIntro(){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||''}\"></div><div><div class=\"subtitle\">Prépare tes oreilles…</div><div class=\"title\">${state.playlist?.name||'Ta playlist'}</div><div class=\"rules\"><div>🕒 Intro 10s • Puis 10s d\'écoute / 10s de réponse par titre</div><div>🏆 1 point par <strong>artiste</strong> + 1 point par <strong>titre</strong></div><div>🎵 Jusqu\'à ${state.tracks.length} titre(s)</div></div></div>`; }
+  function renderGuess(t){ els.screen.innerHTML = `<div class=\"cover blur\"><img alt=\"Cover cachée\" src=\"${t.cover}\"></div><div><div class=\"subtitle\">Extrait ${state.i+1}/${state.tracks.length} — 10 secondes</div><div class=\"title\">???</div><div class=\"meta\">Trouve l\'artiste et le titre</div></div>`; }
+  function renderAnswer(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover\" src=\"${t.cover}\"></div><div><div class=\"subtitle\">Réponse • ${t.year ? t.year+' • ' : ''}${t.album ? t.album : ''}</div><div class=\"title\">${escapeHTML(t.title)}</div><div class=\"meta\">${escapeHTML(t.artists)}</div><div class=\"meta\" style=\"margin-top:8px\">L\'extrait continue ~10s</div></div>`; }
 
   // === Phases & audio fallback ===
   function runPhase(ms, onProgress){ const start=performance.now(); return new Promise(res=>{ function step(){ const p=clamp((performance.now()-start)/ms,0,1); if(onProgress) onProgress(p); if(p<1){ requestAnimationFrame(step);} else {res();} } requestAnimationFrame(step); }); }
