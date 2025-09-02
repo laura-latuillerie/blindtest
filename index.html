@@ -116,7 +116,17 @@
     </header>
 
     <section id="setup" class="card" aria-label="Configuration">
-      <div class="grid">
+      <!-- Nouvel assistant étape par étape -->
+      <div id="wizard">
+        <div class="row inline" style="justify-content:space-between">
+          <div class="pill" id="step1">1) Connexion : <span id="stConn">❌</span></div>
+          <div class="pill" id="step2">2) Lecteur : <span id="stPlayer">⏳</span></div>
+          <div class="pill" id="step3">3) Playlist : <span id="stPl">⏳</span></div>
+          <div class="pill" id="modeBadge">Mode : <strong>Preview</strong></div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px">
         <div>
           <label for="clientId">🆔 Client ID Spotify (PKCE)</label>
           <input id="clientId" type="text" placeholder="ex: 1234567890abcdef1234567890abcd" autocomplete="off" />
@@ -124,22 +134,20 @@
             <button id="btnConnect" class="success">🔑 Se connecter</button>
             <button id="btnDisconnect" class="ghost" title="Oublier le token">♻️ Déconnexion</button>
           </div>
-          <p class="help">Ajoute <strong>l’URL exacte</strong> de cette page dans les Redirect URIs de ton app Spotify. Le flux PKCE ne requiert pas de secret.</p>
+          <p class="help">Coche Premium si tu veux lire les <strong>vrais morceaux</strong>, sinon on utilisera les <strong>previews 30s</strong> quand dispo.</p>
+          <label class="check" style="margin-top:8px"><input id="useSdk" type="checkbox" /> <span>🎧 Utiliser le Lecteur Spotify (Premium)</span></label>
 
-          <div class="row inline" style="margin-top:12px; align-items:center">
-            <label class="check"><input id="useSdk" type="checkbox" /> <span>🎧 Utiliser le Lecteur Spotify (Premium)</span></label>
+          <div class="row inline" style="margin-top:10px; align-items:center">
             <button id="btnInitPlayer" class="secondary" disabled>🖥️ Activer le lecteur web</button>
             <button id="btnAudioUnlock" class="ghost" disabled>🖱️ Débloquer l’audio</button>
+            <button id="btnReclaim" class="ghost" disabled>🛰️ Reprendre le contrôle</button>
           </div>
-          <div class="row inline" style="margin-top:8px; align-items:center">
+          <div class="row inline" style="margin-top:6px; align-items:center">
             <div id="playerState" class="pill">🛑 Lecteur inactif</div>
             <label class="help" style="margin-left:8px;">🔊</label>
             <input id="vol" type="range" min="0" max="1" step="0.01" value="1" disabled>
-            <button id="btnReclaim" class="ghost" disabled>🛰️ Reprendre le contrôle</button>
           </div>
-          <p class="help">Premium requis. Scopes: <code>streaming</code>, <code>user-modify-playback-state</code>, <code>user-read-playback-state</code>, <code>user-read-currently-playing</code>.</p>
-
-          <details class="debug">
+          <details class="debug" style="margin-top:10px">
             <summary>🔍 Diagnostic lecteur</summary>
             <pre id="debug"></pre>
           </details>
@@ -153,17 +161,17 @@
               <input id="maxTracks" type="number" min="1" max="50" value="50" />
             </div>
             <label class="check"><input id="shuffle" type="checkbox" /> <span>🔀 Mélanger l’ordre</span></label>
-            <button id="btnLoad" class="secondary">📥 Charger la playlist</button>
+            <button id="btnLoad" class="secondary">📥 Charger</button>
           </div>
           <div id="playlistSummary" class="help" style="margin-top:10px"></div>
         </div>
       </div>
-      <div class="row inline" style="margin-top:12px">
+      <div class="row inline" style="margin-top:12px; justify-content:flex-end">
         <button id="btnStart" class="success" disabled>▶️ Démarrer</button>
       </div>
     </section>
 
-    <section id="stage" class="card hidden" aria-live="polite">
+    <section id="stage" class="card hidden" aria-live="polite"> class="card hidden" aria-live="polite">
       <div class="stage-header">
         <div class="pill" id="playlistName">🎶 Playlist</div>
         <div class="pill" id="counter">0 / 0</div>
