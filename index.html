@@ -3,106 +3,168 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blindtest Spotify — SPA (Premium + Preview, synchro fiable)</title>
-  <meta name="description" content="Blindtest Spotify: 50 titres max. Mode preview 30s ou Lecteur Spotify Premium (Web Playback SDK) avec synchronisation exacte des phases." />
+  <title>Blindtest Spotify — Color Pop</title>
+  <meta name="description" content="Blindtest Spotify: 50 titres max. Mode preview 30s ou Lecteur Spotify Premium (Web Playback SDK). Synchronisation fiable + UI colorée minimaliste." />
   <style>
-    :root{ --bg:#0b0f14; --panel:#111823; --muted:#9db0c3; --text:#e9f0f6; --brand:#1db954; --accent:#4dd4ff; --shadow:0 10px 40px rgba(0,0,0,.35); --radius:18px; }
-    html,body{ height:100%; }
-    body{ margin:0; background: radial-gradient(1200px 900px at 20% -10%, #132032, transparent), var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; }
+    /* ===== Palette inspirée de l'exemple (pastels) ===== */
+    :root{
+      --cream: #F6EEDD;
+      --lime:  #D8FF66; /* jaune-vert */
+      --pink:  #FF9BD4;
+      --lilac: #C7C5FF;
+      --aqua:  #BFF7FF;
+      --ink:   #0E1321; /* texte foncé */
+      --muted: #5B6175;
+      --ok:    #1DB954;
+      --danger:#FF6B6B;
+      --radius: 18px;
+      --shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+
+    html, body { height:100%; }
+    body{
+      margin:0; color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 10% -10%, var(--aqua) 0%, transparent 60%),
+        radial-gradient(900px 600px at 110% 10%, var(--pink) 0%, transparent 60%),
+        var(--cream);
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+    }
+
     .container{ max-width:1000px; margin:0 auto; padding:24px; }
-    header{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
-    .brand{ display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.2px; }
-    .brand .dot{ width:12px; height:12px; border-radius:50%; background:linear-gradient(45deg,var(--brand),var(--accent)); box-shadow:0 0 20px #1db95470; }
-    .card{ background: linear-gradient(180deg, #111823, #0f1621); border:1px solid #1a2433; box-shadow:var(--shadow); border-radius:var(--radius); padding:18px; }
-    .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media (max-width:860px){ .grid{ grid-template-columns:1fr; } }
-    label{ display:block; font-size:.9rem; color:var(--muted); margin-bottom:6px; }
-    input[type="text"], input[type="url"], input[type="number"]{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid #233043; outline:none; background:#0d1520; color:var(--text); }
-    input::placeholder{ color:#6c7e93; }
+
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; }
+    .brand .dot{ width:14px; height:14px; border-radius:50%; background: conic-gradient(from 180deg, var(--pink), var(--lilac), var(--lime)); box-shadow:0 0 0 4px rgba(255,255,255,.6); }
+
+    /* ===== Cards & layout ===== */
+    .card{ background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; border:3px solid #00000010; }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+
+    /* ===== Inputs ===== */
+    label{ display:block; font-size:.92rem; color:var(--ink); font-weight:700; margin-bottom:6px; }
+    .help{ color:var(--muted); font-size:.85rem; }
+
+    input[type="text"], input[type="url"], input[type="number"]{
+      width:100%; padding:12px 14px; border-radius:14px; border:2px solid #00000015; outline:none; background:#fff; color:var(--ink);
+    }
+    input::placeholder{ color:#9aa1b2; }
+
     .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .row > * { flex:1 1 auto; }
-    .help{ color:#7e93ac; font-size:.85rem; }
-    button{ appearance:none; border:0; border-radius:14px; padding:12px 16px; font-weight:700; background:linear-gradient(90deg,var(--brand),#2de18b); color:#042010; cursor:pointer; box-shadow:0 10px 20px rgba(29,185,84,.25), inset 0 -2px 0 rgba(0,0,0,.15); transition: transform .06s ease, filter .2s ease, opacity .2s ease; }
-    button.secondary{ background: linear-gradient(90deg, #1a2433, #162132); color:#d3e2f3; box-shadow: inset 0 -2px 0 rgba(255,255,255,.04); border:1px solid #223049; }
-    button.ghost{ background: transparent; border:1px solid #223049; color:#d3e2f3; }
-    button:disabled{ opacity:.5; cursor:not-allowed; }
+    .row > * { flex: 1 1 auto; }
+
+    /* Checkboxes: align & joli */
+    .check{ display:flex; align-items:center; gap:10px; }
+    .check input[type=checkbox]{
+      appearance: none; width:20px; height:20px; border-radius:6px; border:2px solid #00000030; display:grid; place-items:center; background:white; cursor:pointer;
+    }
+    .check input[type=checkbox]::after{ content:"✔"; font-size:14px; transform:scale(0); transition:.12s; }
+    .check input[type=checkbox]:checked{ background: var(--lime); border-color:#00000060; }
+    .check input[type=checkbox]:checked::after{ transform:scale(1); }
+
+    button{
+      appearance:none; border:0; border-radius:14px; padding:12px 16px; font-weight:800; cursor:pointer;
+      background:#111; color:white; box-shadow: var(--shadow); transition: transform .04s ease;
+    }
     button:active{ transform:translateY(1px); }
+    button.secondary{ background:#ffffff; color:#111; border:2px solid #00000020; }
+    button.ghost{ background:transparent; color:#111; border:2px dashed #00000030; }
+    button.success{ background: var(--ok); }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
+
+    .pill{ display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:999px; background: #ffffffd9; border:2px solid #00000010; font-weight:700; }
+
+    /* Progress */
+    .progress{ position:relative; height:14px; background:#fff; border:2px solid #00000020; border-radius:999px; overflow:hidden; }
+    .progress .bar{ position:absolute; inset:0; width:0%; background: repeating-linear-gradient(90deg, var(--lilac), var(--lilac) 12px, var(--pink) 12px, var(--pink) 24px, var(--lime) 24px, var(--lime) 36px); transition: width .08s linear; }
+
+    /* Stage */
     #stage{ margin-top:16px; }
-    .stage-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .pill{ background:#0b1320; border:1px solid #1c2a41; color:#a9bed6; padding:6px 10px; border-radius:999px; font-size:.85rem; }
-    .progress{ position:relative; height:10px; background:#0a1220; border:1px solid #1a2a40; border-radius:999px; overflow:hidden; }
-    .progress .bar{ position:absolute; inset:0; width:0%; background:linear-gradient(90deg,var(--accent),var(--brand)); transition: width .06s linear; }
-    .screen{ display:grid; grid-template-columns:240px 1fr; gap:20px; align-items:center; min-height:280px; }
-    @media (max-width:720px){ .screen{ grid-template-columns:1fr; text-align:center; } }
-    .cover{ width:100%; aspect-ratio:1; border-radius:16px; background:#0a121c; border:1px solid #1a2434; overflow:hidden; display:grid; place-items:center; }
+    .stage-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .screen{ display:grid; grid-template-columns: 240px 1fr; gap:20px; align-items:center; min-height: 280px; }
+    @media (max-width: 760px){ .screen{ grid-template-columns:1fr; text-align:center; } }
+
+    .cover{ width:100%; aspect-ratio:1; border-radius:22px; background:linear-gradient(135deg, var(--lilac), var(--aqua)); border:3px solid #00000010; overflow:hidden; display:grid; place-items:center; }
     .cover img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .title{ font-size: clamp(1.6rem, 2vw + 1rem, 2.4rem); font-weight:800; letter-spacing:.2px; margin:4px 0; }
-    .subtitle{ color:#a9bed6; font-size:1rem; }
-    .meta{ margin-top:8px; color:#8eabc5; }
-    .rules{ display:flex; flex-direction:column; gap:10px; background:#0b1320; border:1px dashed #223049; border-radius:14px; padding:14px; color:#cde6ff; }
-    .controls{ display:flex; gap:10px; flex-wrap:wrap; }
-    .toast{ position:fixed; right:16px; bottom:16px; background:#0f1723; border:1px solid #21314a; color:#cfe6ff; padding:10px 12px; border-radius:12px; box-shadow:var(--shadow); }
+
+    .title{ font-size: clamp(1.6rem, 2vw + 1rem, 2.4rem); font-weight:1000; letter-spacing:.2px; margin:4px 0; }
+    .subtitle{ color:#313852; font-size:1rem; font-weight:700; }
+    .meta{ margin-top:8px; color:#525b77; }
+
+    .rules{ display:flex; flex-direction:column; gap:10px; background:white; border:2px dashed #00000025; border-radius:14px; padding:14px; }
+
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .toast{ position:fixed; right:16px; bottom:16px; background:#111; color:#fff; padding:10px 12px; border-radius:12px; box-shadow:var(--shadow); }
     .hidden{ display:none !important; }
+
+    /* Debug */
+    details.debug{ margin-top:10px; }
+    details.debug pre{ background:#fff; border:2px solid #00000010; border-radius:12px; padding:10px; max-height:200px; overflow:auto; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="brand"><span class="dot"></span> Blindtest Spotify</div>
-      <div id="authState" class="pill">Non connecté</div>
+      <div class="brand"><span class="dot"></span> Blindtest <span style="font-weight:700;">Color Pop</span> ✨</div>
+      <div id="authState" class="pill">🔒 Non connecté</div>
     </header>
 
     <section id="setup" class="card" aria-label="Configuration">
       <div class="grid">
         <div>
-          <label for="clientId">Client ID Spotify (auth PKCE)</label>
+          <label for="clientId">🆔 Client ID Spotify (PKCE)</label>
           <input id="clientId" type="text" placeholder="ex: 1234567890abcdef1234567890abcd" autocomplete="off" />
           <div class="row" style="margin-top:10px">
-            <button id="btnConnect">Se connecter à Spotify</button>
-            <button id="btnDisconnect" class="ghost" title="Oublier le token">Déconnexion</button>
+            <button id="btnConnect" class="success">🔑 Se connecter</button>
+            <button id="btnDisconnect" class="ghost" title="Oublier le token">♻️ Déconnexion</button>
           </div>
-          <p class="help">Ajoute l'URL de cette page en Redirect URI dans ton app Spotify. Le flux PKCE ne requiert pas de secret.</p>
+          <p class="help">Ajoute <strong>l’URL exacte</strong> de cette page dans les Redirect URIs de ton app Spotify. Le flux PKCE ne requiert pas de secret.</p>
 
           <div class="row" style="margin-top:12px; align-items:center">
-            <input id="useSdk" type="checkbox" />
-            <label for="useSdk" style="margin:0">Utiliser le <strong>Lecteur Spotify (Premium)</strong> — lit les vrais morceaux, même sans preview</label>
+            <label class="check"><input id="useSdk" type="checkbox" /> <span>🎧 Utiliser le Lecteur Spotify (Premium)</span></label>
           </div>
-          <div class="row" style="margin-top:8px">
-            <button id="btnInitPlayer" class="secondary" disabled>Activer le lecteur web</button>
-            <div id="playerState" class="pill">Lecteur inactif</div>
+          <div class="row" style="margin-top:8px; align-items:center">
+            <button id="btnInitPlayer" class="secondary" disabled>🖥️ Activer le lecteur web</button>
+            <button id="btnAudioUnlock" class="ghost" disabled>🖱️ Débloquer l’audio</button>
+            <div id="playerState" class="pill">🛑 Lecteur inactif</div>
+            <label class="help" style="margin-left:8px;">🔊</label>
+            <input id="vol" type="range" min="0" max="1" step="0.01" value="1" disabled>
+            <button id="btnReclaim" class="ghost" disabled>🛰️ Reprendre le contrôle</button>
           </div>
-          <p class="help">Nécessite un compte Spotify Premium. Scopes requis: <code>streaming</code>, <code>user-modify-playback-state</code>, <code>user-read-playback-state</code>, <code>user-read-currently-playing</code>.</p>
+          <p class="help">Premium requis. Scopes: <code>streaming</code>, <code>user-modify-playback-state</code>, <code>user-read-playback-state</code>, <code>user-read-currently-playing</code>.</p>
+
+          <details class="debug">
+            <summary>🔍 Diagnostic lecteur</summary>
+            <pre id="debug"></pre>
+          </details>
         </div>
         <div>
-          <label for="playlistUrl">Lien de playlist Spotify</label>
+          <label for="playlistUrl">📜 Lien de playlist Spotify</label>
           <input id="playlistUrl" type="url" placeholder="https://open.spotify.com/playlist/… ou spotify:playlist:…"/>
           <div class="row" style="margin-top:10px">
             <div>
-              <label for="maxTracks">Nombre max de titres</label>
+              <label for="maxTracks"># Titres max</label>
               <input id="maxTracks" type="number" min="1" max="50" value="50" />
             </div>
-            <div class="row" style="align-items:center; gap:8px;">
-              <input id="shuffle" type="checkbox" />
-              <label for="shuffle" style="margin:0;">Mélanger l'ordre</label>
-            </div>
-            <button id="btnLoad" class="secondary">Charger la playlist</button>
+            <label class="check"><input id="shuffle" type="checkbox" /> <span>🔀 Mélanger l’ordre</span></label>
+            <button id="btnLoad" class="secondary">📥 Charger la playlist</button>
           </div>
           <div id="playlistSummary" class="help" style="margin-top:10px"></div>
         </div>
       </div>
       <div class="row" style="margin-top:12px">
-        <button id="btnStart" disabled>Démarrer le blindtest</button>
+        <button id="btnStart" class="success" disabled>▶️ Démarrer le blindtest</button>
       </div>
     </section>
 
     <section id="stage" class="card hidden" aria-live="polite">
-      <div class="stage-header row" style="margin-bottom:10px">
-        <div class="pill" id="playlistName">Playlist</div>
+      <div class="stage-header">
+        <div class="pill" id="playlistName">🎶 Playlist</div>
         <div class="pill" id="counter">0 / 0</div>
       </div>
-      <div class="progress" aria-label="Progression">
-        <div class="bar" id="progressBar"></div>
-      </div>
+      <div class="progress" aria-label="Progression"><div class="bar" id="progressBar"></div></div>
       <div class="screen" id="screen" style="margin:16px 0 12px"></div>
       <div class="controls">
         <button id="btnSkip" class="secondary">⏭️ Suivant</button>
@@ -118,7 +180,7 @@
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
 
   <script>
-  // === Durées & constantes ===
+  // ===== Durées & constantes =====
   const INTRO_MS = 10_000;  // intro
   const GUESS_MS = 10_000;  // phase devine
   const ANSWER_MS = 10_000; // phase réponse (son continue)
@@ -132,7 +194,10 @@
     disconnect: document.getElementById('btnDisconnect'),
     useSdk: document.getElementById('useSdk'),
     btnInitPlayer: document.getElementById('btnInitPlayer'),
+    btnAudioUnlock: document.getElementById('btnAudioUnlock'),
+    btnReclaim: document.getElementById('btnReclaim'),
     playerState: document.getElementById('playerState'),
+    vol: document.getElementById('vol'),
     playlistUrl: document.getElementById('playlistUrl'),
     maxTracks: document.getElementById('maxTracks'),
     shuffle: document.getElementById('shuffle'),
@@ -148,7 +213,8 @@
     btnRestart: document.getElementById('btnRestart'),
     toast: document.getElementById('toast'),
     setup: document.getElementById('setup'),
-    playlistSummary: document.getElementById('playlistSummary')
+    playlistSummary: document.getElementById('playlistSummary'),
+    debug: document.getElementById('debug')
   };
 
   const state = {
@@ -163,9 +229,10 @@
     device_id: null, // SDK device
     sdkPlayer: null,
     usingSdk: false,
+    audioUnlocked: false,
   };
 
-  // === Utils ===
+  // ===== Utils =====
   const clamp=(n,min,max)=> Math.max(min, Math.min(max,n));
   const sleep=(ms)=> new Promise(r=>setTimeout(r,ms));
   const b64url = (buf)=> btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -176,18 +243,14 @@
   function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
   function parsePlaylistId(url){ if(!url) return null; const s=url.trim(); let m=s.match(/playlist\/([a-zA-Z0-9]+)(?:\?|$)/); if(m) return m[1]; m=s.match(/^spotify:playlist:([a-zA-Z0-9]+)$/); if(m) return m[1]; return null; }
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } }
+  function placeholderCover(){ const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='${getComputedStyle(document.documentElement).getPropertyValue('--pink').trim()}'/><stop offset='1' stop-color='${getComputedStyle(document.documentElement).getPropertyValue('--lime').trim()}'/></linearGradient></defs><rect width='600' height='600' fill='${getComputedStyle(document.documentElement).getPropertyValue('--cream').trim()}'/><circle cx='300' cy='300' r='240' fill='url(#g)' opacity='0.35'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,Segoe UI,Roboto,Arial' font-size='280' fill='#0E1321'>?</text></svg>`); return `data:image/svg+xml;charset=utf-8,${svg}`; }
 
-  function placeholderCover(){
-    const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='#0ea5e9'/><stop offset='1' stop-color='#22c55e'/></linearGradient></defs><rect width='600' height='600' fill='#0f172a'/><circle cx='300' cy='300' r='240' fill='url(#g)' opacity='0.2'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,Segoe UI,Roboto,Arial' font-size='280' fill='#e2e8f0'>?</text></svg>`);
-    return `data:image/svg+xml;charset=utf-8,${svg}`;
-  }
-
-  // === Auth storage/UI ===
+  // ===== Auth storage/UI =====
   function saveAuth(){ localStorage.setItem('spotify_auth', JSON.stringify({ access_token:state.access_token, refresh_token:state.refresh_token, token_expires_at:state.token_expires_at, client_id:state.client_id, redirect_uri:state.redirect_uri })); }
   function loadAuth(){ try{ const saved=JSON.parse(localStorage.getItem('spotify_auth')||'{}'); if(saved.client_id) els.clientId.value = saved.client_id; Object.assign(state, saved); updateAuthUI(); }catch(e){} }
-  function updateAuthUI(){ const ok = !!state.access_token && Date.now() < (state.token_expires_at||0); els.authState.textContent = ok? 'Connecté' : 'Non connecté'; els.useSdk.disabled = !ok; els.btnInitPlayer.disabled = !ok; }
+  function updateAuthUI(){ const ok = !!state.access_token && Date.now() < (state.token_expires_at||0); els.authState.textContent = ok? '✅ Connecté' : '🔒 Non connecté'; els.useSdk.disabled = !ok; els.btnInitPlayer.disabled = !ok; els.btnAudioUnlock.disabled = false; }
 
-  // === PKCE OAuth ===
+  // ===== PKCE OAuth =====
   async function beginAuth(){
     const client_id = els.clientId.value.trim(); if(!client_id){ toast('Renseigne ton Client ID Spotify'); return; }
     state.client_id = client_id; saveAuth();
@@ -211,18 +274,18 @@
 
   async function ensureToken(){ if(state.access_token && Date.now() < state.token_expires_at) return; if(!state.refresh_token) throw new Error('Pas de token. Connecte-toi.'); const body=new URLSearchParams({ grant_type:'refresh_token', refresh_token: state.refresh_token, client_id: state.client_id || els.clientId.value.trim() }); const res = await fetch('https://accounts.spotify.com/api/token',{ method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body }); if(!res.ok) throw new Error('Refresh token invalide'); const tok=await res.json(); state.access_token = tok.access_token; if(tok.refresh_token) state.refresh_token = tok.refresh_token; state.token_expires_at = Date.now() + (tok.expires_in*1000 - 5000); saveAuth(); updateAuthUI(); }
 
-  // === Spotify API helpers ===
-  async function spGet(url){ await ensureToken(); const r=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(r.status===401){ await ensureToken(); const r2=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r2.ok) throw new Error('Spotify API '+r2.status); return r2.json(); } if(!r.ok) throw new Error('Spotify API '+r.status); return r.json(); }
+  // ===== Spotify API helpers =====
+  async function spGet(url){ await ensureToken(); const r=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r.ok) throw new Error('Spotify API '+r.status); return r.json(); }
   async function spPut(url, body){ await ensureToken(); const r=await fetch(url,{ method:'PUT', headers:{ Authorization:`Bearer ${state.access_token}`, 'Content-Type':'application/json' }, body: body? JSON.stringify(body): undefined }); if(r.status===204) return {ok:true}; const txt = await r.text(); if(!r.ok) throw new Error('STATUS '+r.status+' '+txt); try{ return JSON.parse(txt); }catch{ return {ok:r.ok, body:txt}; } }
 
-  // === Chargement playlist ===
+  // ===== Chargement playlist =====
   async function loadPlaylist(){
     try{
       els.btnLoad.disabled = true; state.usingSdk = !!els.useSdk.checked;
       const id = parsePlaylistId(els.playlistUrl.value); if(!id){ toast('URL de playlist invalide'); return; }
       const pl = await spGet(`https://api.spotify.com/v1/playlists/${id}?fields=name,images,external_urls.spotify`);
       state.playlist = { id, name: pl.name, images: pl.images||[], url: pl.external_urls?.spotify };
-      els.playlistName.textContent = pl.name || 'Playlist';
+      els.playlistName.textContent = '🎶 '+(pl.name || 'Playlist');
 
       const maxWant = clamp(parseInt(els.maxTracks.value||MAX_TOTAL,10)||MAX_TOTAL,1,MAX_TOTAL);
       let url = `https://api.spotify.com/v1/playlists/${id}/tracks?limit=100&market=from_token&fields=items(track(id,is_local,name,uri,preview_url,artists(name),album(name,images,release_date,release_date_precision))),next`;
@@ -244,38 +307,42 @@
 
       const total = acc.length;
       const msg = state.usingSdk
-        ? `<strong>${state.playlist.name}</strong> — ${total} titres prêts (mode Premium).`
+        ? `<strong>${state.playlist.name}</strong> — ${total} titres prêts <em>(mode Premium)</em>.`
         : `<strong>${state.playlist.name}</strong> — ${total} extraits 30s prêts (titres sans preview exclus).`;
       els.playlistSummary.innerHTML = msg;
       els.btnStart.disabled = total === 0;
-      toast(total ? `Playlist prête: ${total} titre(s)` : (state.usingSdk ? 'Aucun titre exploitable (bizarre pour Premium)' : 'Aucun extrait jouable (pas de preview). Essaie le mode Premium.'));
+      toast(total ? `✅ ${total} titre(s) prêts` : (state.usingSdk ? 'Aucun titre exploitable (Premium requis ?)' : 'Aucun extrait jouable (pas de preview). Essaie le mode Premium.'));
     }catch(e){ console.error(e); toast('Erreur lors du chargement de la playlist.'); }
     finally{ els.btnLoad.disabled = false; }
   }
 
-  // === Web Playback SDK ===
-  window.onSpotifyWebPlaybackSDKReady = () => { /* SDK ready */ };
+  // ===== Web Playback SDK =====
+  window.onSpotifyWebPlaybackSDKReady = () => { /* SDK script chargé */ };
 
   async function initSdkPlayer(){
     try{
       if(!state.access_token){ toast('Connecte-toi à Spotify d\'abord'); return; }
       if(state.sdkPlayer){ toast('Lecteur déjà prêt'); return; }
-      const player = new Spotify.Player({ name: 'Blindtest Web Player', getOAuthToken: cb => cb(state.access_token), volume: 1 });
+      const player = new Spotify.Player({ name: 'Blindtest Web Player', getOAuthToken: cb => cb(state.access_token), volume: els.vol.valueAsNumber || 1 });
       state.sdkPlayer = player;
 
-      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = 'Lecteur prêt'; });
-      player.addListener('not_ready', ({ device_id }) => { if(state.device_id===device_id) state.device_id=null; els.playerState.textContent = 'Lecteur indisponible'; });
-      player.addListener('initialization_error', ({ message }) => toast('Init error: '+message));
-      player.addListener('authentication_error', ({ message }) => toast('Auth error: '+message));
-      player.addListener('account_error', ({ message }) => toast('Compte non Premium ou erreur: '+message));
+      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = '🟢 Lecteur prêt'; els.btnReclaim.disabled = false; els.vol.disabled = true; /* volume via setVolume */ });
+      player.addListener('not_ready', ({ device_id }) => { if(state.device_id===device_id) state.device_id=null; els.playerState.textContent = '🟠 Lecteur indisponible'; });
+      player.addListener('initialization_error', ({ message }) => logDebug('init_error', message));
+      player.addListener('authentication_error', ({ message }) => logDebug('auth_error', message));
+      player.addListener('account_error', ({ message }) => logDebug('account_error', message));
+      player.addListener('player_state_changed', (st) => logDebug('state', st));
 
       const ok = await player.connect();
       if(!ok){ toast('Impossible de connecter le lecteur'); return; }
 
       await transferToWebPlayer(true); // attendre device actif
-      els.playerState.textContent = 'Lecteur actif'; toast('Lecteur web prêt ✅');
+      els.playerState.textContent = '🟢 Lecteur actif'; toast('Lecteur web prêt ✅');
     }catch(e){ console.error(e); toast('Erreur d\'initialisation du lecteur.'); }
   }
+
+  function logDebug(label, data){ try{ const prev = els.debug.textContent; const line = `
+[${new Date().toLocaleTimeString()}] ${label}: ${typeof data==='string'?data:JSON.stringify(data)}`; els.debug.textContent = (prev+line).slice(-4000); }catch{} }
 
   async function spGetJson(url){ const r = await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r.ok) throw new Error('GET '+r.status); return r.json(); }
 
@@ -283,28 +350,22 @@
     if(!state.device_id) return;
     await spPut('https://api.spotify.com/v1/me/player', { device_ids:[state.device_id], play:false });
     if(waitActive){
-      for(let i=0;i<10;i++){
+      for(let i=0;i<15;i++){
         try{ const d = await spGetJson('https://api.spotify.com/v1/me/player/devices'); const me = (d.devices||[]).find(x=>x.id===state.device_id); if(me && me.is_active) return true; }catch{}
-        await sleep(400);
+        await sleep(300);
       }
+      toast('⚠️ Device pas encore actif. Clique « Reprendre le contrôle ».');
     }
     return true;
   }
 
-  async function waitForSdkPlaying(targetUri, timeoutMs=6000){
+  async function waitForSdkPlaying(uri, timeoutMs=7000){
     return new Promise((resolve, reject)=>{
       const start = performance.now();
-      const onState = (stateObj)=>{
-        if(!stateObj) return;
-        const t = stateObj.track_window?.current_track?.uri || stateObj.context?.uri;
-        const playing = !stateObj.paused;
-        if(playing && t && t.includes(targetUri.split(':').pop())){ cleanup(); resolve(); }
-        else if(performance.now()-start > timeoutMs){ cleanup(); reject(new Error('SDK_START_TIMEOUT')); }
-      };
-      const cleanup = ()=>{ if(state.sdkPlayer) state.sdkPlayer.removeListener('player_state_changed', onState); };
-      if(state.sdkPlayer) state.sdkPlayer.addListener('player_state_changed', onState);
-      // Hard timeout safeguard
-      setTimeout(()=>{ cleanup(); reject(new Error('SDK_START_TIMEOUT')); }, timeoutMs+500);
+      function onState(s){ if(!s) return; const playing = !s.paused; const cur = s.track_window?.current_track?.uri; if(playing && cur && cur === uri){ cleanup(); resolve(); } if(performance.now() - start > timeoutMs){ cleanup(); reject(new Error('SDK_START_TIMEOUT')); } }
+      function cleanup(){ try{ state.sdkPlayer.removeListener('player_state_changed', onState);}catch{} }
+      try{ state.sdkPlayer.addListener('player_state_changed', onState);}catch{}
+      setTimeout(()=>{ cleanup(); reject(new Error('SDK_START_TIMEOUT')); }, timeoutMs+800);
     });
   }
 
@@ -313,19 +374,19 @@
     try{
       await spPut(`https://api.spotify.com/v1/me/player/play?device_id=${state.device_id}`, { uris:[uri], position_ms: 0 });
       await waitForSdkPlaying(uri);
-    }catch(e){
-      const msg = String(e.message||'');
-      if(msg.includes('STATUS 403')) throw new Error('PREMIUM_REQUIRED');
-      if(msg.includes('STATUS 404') || msg.includes('NO_DEVICE')) throw new Error('NO_ACTIVE_DEVICE');
-      throw e;
-    }
+    }catch(e){ const msg = String(e.message||''); if(msg.includes('STATUS 403')) throw new Error('PREMIUM_REQUIRED'); if(msg.includes('STATUS 404') || msg.includes('NO_DEVICE')) throw new Error('NO_ACTIVE_DEVICE'); throw e; }
   }
   async function pauseSdk(){ try{ await spPut(`https://api.spotify.com/v1/me/player/pause?device_id=${state.device_id}`); }catch(e){} }
   async function setSdkVolume(vol){ try{ if(state.sdkPlayer) await state.sdkPlayer.setVolume(clamp(vol,0,1)); }catch(e){} }
 
-  // === Jeu ===
+  // ===== Audio unlock (navigateur) =====
+  els.btnAudioUnlock.addEventListener('click', ()=>{ const a=els.player; a.src=''; a.play().catch(()=>{}); state.audioUnlocked=true; toast('🔓 Audio débloqué'); });
+  els.vol.addEventListener('input', ()=>{ if(state.sdkPlayer) setSdkVolume(els.vol.valueAsNumber); else els.player.volume = els.vol.valueAsNumber; });
+  els.btnReclaim.addEventListener('click', ()=> transferToWebPlayer(true));
+
+  // ===== Jeu =====
   function startGame(){ if(!state.tracks.length){ toast('Charge d\'abord une playlist'); return; } state.i=0; setProgress(0); els.setup.classList.add('hidden'); els.stage.classList.remove('hidden'); showIntro().then(()=> playCurrent()); }
-  function updateCounter(){ const total=state.tracks.length; els.counter.textContent = `${Math.min(state.i+1,total)} / ${total}`; }
+  function updateCounter(){ const total=state.tracks.length; els.counter.textContent = `🎯 ${Math.min(state.i+1,total)} / ${total}`; }
   async function showIntro(){ renderIntro(); setProgress(0); await runPhase(INTRO_MS); }
 
   async function playCurrent(){
@@ -335,79 +396,43 @@
     if(state.usingSdk){
       try{
         await transferToWebPlayer(true);
-        await playSdkTrack(t.uri); // ⬅️ on attend que ça joue VRAIMENT avant d'enchaîner
+        await playSdkTrack(t.uri); // attendre la lecture réelle
         await runPhase(GUESS_MS, p=>setProgress(p));
         renderAnswer(t);
         await fadeAndWaitSdk(ANSWER_MS);
         nextTrack();
       }catch(err){
-        console.warn('SDK play failed', err);
-        if(t.preview){
-          toast('Lecteur Premium indisponible — bascule sur l\'extrait 30s.');
-          await fallbackPreviewFlow(t);
-        } else {
-          toast(err.message==='PREMIUM_REQUIRED' ? 'Lecture impossible (Premium requis)' : 'Lecture impossible sur le lecteur web');
-          await sleep(1200); nextTrack();
-        }
+        logDebug('sdk_error', err.message||String(err));
+        if(t.preview){ toast('🎧 Lecteur Premium KO — on bascule sur l\'extrait 30s.'); await fallbackPreviewFlow(t); }
+        else { toast('⚠️ Lecture impossible sur le lecteur web'); await sleep(1000); nextTrack(); }
       }
     } else {
       await fallbackPreviewFlow(t);
     }
   }
 
-  async function fadeAndWaitSdk(totalMs){
-    const endAt = performance.now() + totalMs; const vol0 = 1;
-    await new Promise((resolve)=>{
-      function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/totalMs); if(remain <= FADE_OUT_MS){ const f = clamp(remain/FADE_OUT_MS,0,1); setSdkVolume(vol0*f); } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } }
-      requestAnimationFrame(tick);
-    });
-    await pauseSdk(); await setSdkVolume(1);
-  }
+  async function fadeAndWaitSdk(totalMs){ const endAt = performance.now() + totalMs; const vol0 = els.vol.valueAsNumber || 1; await new Promise((resolve)=>{ function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/totalMs); if(remain <= FADE_OUT_MS){ const f = clamp(remain/FADE_OUT_MS,0,1); setSdkVolume(vol0*f); } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } } requestAnimationFrame(tick); }); await pauseSdk(); await setSdkVolume(vol0); }
 
-  async function fallbackPreviewFlow(t){
-    if(!t.preview){ await sleep(500); nextTrack(); return; }
-    await playPreviewAndWait(t.preview); // ⬅️ on démarre chronomètre au vrai démarrage
-    await runPhase(GUESS_MS, p=>setProgress(p));
-    renderAnswer(t);
-    await fadeAndWaitAudio(ANSWER_MS);
-    nextTrack();
-  }
+  async function fallbackPreviewFlow(t){ await playPreviewAndWait(t.preview); await runPhase(GUESS_MS, p=>setProgress(p)); renderAnswer(t); await fadeAndWaitAudio(ANSWER_MS); nextTrack(); }
 
-  function playPreviewAndWait(src){
-    return new Promise((resolve)=>{
-      const a=els.player; a.pause(); a.src=src; a.currentTime=0; a.volume=1;
-      const onStart = ()=>{ a.removeEventListener('playing', onStart); resolve(); };
-      a.addEventListener('playing', onStart, { once:true });
-      const p = a.play(); if(p && p.catch){ p.catch(()=>{ toast('Clique la page pour autoriser l\'audio'); resolve(); }); }
-      // Sécurité : si 'playing' ne vient pas, on ne bloque pas
-      setTimeout(()=> resolve(), 1500);
-    });
-  }
-
-  async function fadeAndWaitAudio(totalMs){
-    const a = els.player; const endAt = performance.now() + totalMs; const fadeStart = endAt - FADE_OUT_MS; const vol0=a.volume;
-    await new Promise((resolve)=>{
-      function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/totalMs); if(now>=fadeStart){ const f=clamp(1 - (now - fadeStart)/FADE_OUT_MS,0,1); a.volume = vol0*f; } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } }
-      requestAnimationFrame(tick);
-    });
-    a.pause(); a.currentTime=0; a.volume=1; a.src='';
-  }
+  function playPreviewAndWait(src){ return new Promise((resolve)=>{ const a=els.player; a.pause(); a.src=src; a.currentTime=0; a.volume=els.vol.valueAsNumber || 1; const onStart = ()=>{ a.removeEventListener('playing', onStart); resolve(); }; a.addEventListener('playing', onStart, { once:true }); const p = a.play(); if(p && p.catch){ p.catch(()=>{ toast('🖱️ Clique « Débloquer l’audio »'); resolve(); }); } setTimeout(()=> resolve(), 1500); }); }
+  async function fadeAndWaitAudio(totalMs){ const a = els.player; const endAt = performance.now() + totalMs; const fadeStart = endAt - FADE_OUT_MS; const vol0=a.volume; await new Promise((resolve)=>{ function tick(){ const now=performance.now(); const remain=endAt-now; setProgress(1 - remain/totalMs); if(now>=fadeStart){ const f=clamp(1 - (now - fadeStart)/FADE_OUT_MS,0,1); a.volume = vol0*f; } if(remain>16){ requestAnimationFrame(tick);} else { resolve(); } } requestAnimationFrame(tick); }); a.pause(); a.currentTime=0; a.volume=vol0; a.src=''; }
 
   function nextTrack(){ stopAll(); state.i++; updateCounter(); if(state.i < state.tracks.length){ playCurrent(); } else { finish(); } }
 
-  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"title\">Fin du blindtest 🎉</div><div class=\"subtitle\">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class=\"meta\" style=\"margin-top:12px\">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
+  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"title\">🎉 Fin du blindtest</div><div class=\"subtitle\">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class=\"meta\" style=\"margin-top:12px\">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
 
-  function renderIntro(){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"subtitle\">Prépare tes oreilles…</div><div class=\"title\">${state.playlist?.name||'Ta playlist'}</div><div class=\"rules\"><div>🕒 Intro 10s • Puis 10s d\'écoute / 10s de réponse par titre</div><div>🏆 1 point par <strong>artiste</strong> + 1 point par <strong>titre</strong></div><div>🎵 Jusqu\'à ${state.tracks.length} titre(s)</div></div></div>`; }
-  function renderGuess(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover masquée\" src=\"${placeholderCover()}\"></div><div><div class=\"subtitle\">Extrait ${state.i+1}/${state.tracks.length} — 10 secondes</div><div class=\"title\">???</div><div class=\"meta\">Trouve l\'artiste et le titre</div></div>`; }
-  function renderAnswer(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover\" src=\"${t.cover||placeholderCover()}\"></div><div><div class=\"subtitle\">Réponse • ${t.year ? t.year+' • ' : ''}${t.album ? t.album : ''}</div><div class=\"title\">${escapeHTML(t.title)}</div><div class=\"meta\">${escapeHTML(t.artists)}</div><div class=\"meta\" style=\"margin-top:8px\">L\'extrait continue ~10s</div></div>`; }
+  function renderIntro(){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"subtitle\">🚦 Prêt·e ?</div><div class=\"title\">${escapeHTML(state.playlist?.name||'Ta playlist')}</div><div class=\"rules\"><div>🕒 Intro 10s • Puis 10s d\'écoute / 10s de réponse par titre</div><div>🏆 1 point par <strong>artiste</strong> + 1 point par <strong>titre</strong></div><div>🎵 Jusqu\'à ${state.tracks.length} titre(s)</div></div></div>`; }
+  function renderGuess(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover masquée\" src=\"${placeholderCover()}\"></div><div><div class=\"subtitle\">Extrait ${state.i+1}/${state.tracks.length} — 10 secondes</div><div class=\"title\">❓❓❓</div><div class=\"meta\">Trouve l\'artiste et le titre</div></div>`; }
+  function renderAnswer(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover\" src=\"${t.cover||placeholderCover()}\"></div><div><div class=\"subtitle\">Réponse • ${t.year ? t.year+' • ' : ''}${t.album ? escapeHTML(t.album) : ''}</div><div class=\"title\">${escapeHTML(t.title)}</div><div class=\"meta\">${escapeHTML(t.artists)}</div><div class=\"meta\" style=\"margin-top:8px\">L\'extrait continue ~10s</div></div>`; }
 
-  // === Phases & audio fallback ===
+  // ===== Phases & controls =====
   function runPhase(ms, onProgress){ const start=performance.now(); return new Promise(res=>{ function step(){ const p=clamp((performance.now()-start)/ms,0,1); if(onProgress) onProgress(p); if(p<1){ requestAnimationFrame(step);} else {res();} } requestAnimationFrame(step); }); }
-  function stopAll(){ try{ els.player.pause(); els.player.currentTime=0; els.player.src=''; }catch{} if(state.sdkPlayer){ pauseSdk(); setSdkVolume(1); } }
+  function stopAll(){ try{ els.player.pause(); els.player.currentTime=0; els.player.src=''; }catch{} if(state.sdkPlayer){ pauseSdk(); } }
 
-  // === Événements UI ===
+  // ===== Événements UI =====
   els.connect.addEventListener('click', beginAuth);
-  els.disconnect.addEventListener('click', ()=>{ state.access_token=null; state.refresh_token=null; state.token_expires_at=0; saveAuth(); updateAuthUI(); toast('Token supprimé'); });
+  els.disconnect.addEventListener('click', ()=>{ state.access_token=null; state.refresh_token=null; state.token_expires_at=0; saveAuth(); updateAuthUI(); toast('Jeton supprimé'); });
   els.btnLoad.addEventListener('click', loadPlaylist);
   els.btnStart.addEventListener('click', startGame);
   els.btnSkip.addEventListener('click', nextTrack);
@@ -415,7 +440,7 @@
   els.useSdk.addEventListener('change', ()=>{ if(els.useSdk.checked){ toast('Mode Premium activé — pense à « Activer le lecteur web »'); } });
   els.btnInitPlayer.addEventListener('click', initSdkPlayer);
 
-  // === Init ===
+  // ===== Init =====
   (async function init(){ loadAuth(); await finishAuth(); updateAuthUI(); })();
   </script>
 </body>
