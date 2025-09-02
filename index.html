@@ -3,10 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Blindtest Spotify — Color Pop</title>
-  <meta name="description" content="Blindtest Spotify: 50 titres max. Mode preview 30s ou Lecteur Spotify Premium (Web Playback SDK). Synchronisation fiable + UI colorée minimaliste." />
+  <title>Machu Testu — Color Pop</title>
+  <meta name="description" content="Machu Testu: Blindtest Spotify 50 titres max. Mode preview 30s ou Lecteur Spotify Premium (Web Playback SDK). Synchronisation fiable + UI colorée minimaliste." />
   <style>
-    /* ===== Palette inspirée de l'exemple (pastels) ===== */
+    /* ===== Reset & sizing ===== */
+    *, *::before, *::after{ box-sizing: border-box; }
+    html, body { height:100%; }
+
+    /* ===== Palette inspirée (pastels) ===== */
     :root{
       --cream: #F6EEDD;
       --lime:  #D8FF66; /* jaune-vert */
@@ -15,13 +19,12 @@
       --aqua:  #BFF7FF;
       --ink:   #0E1321; /* texte foncé */
       --muted: #5B6175;
-      --ok:    #1DB954;
+      --ok:    #29C36A;
       --danger:#FF6B6B;
       --radius: 18px;
       --shadow: 0 12px 30px rgba(0,0,0,.12);
     }
 
-    html, body { height:100%; }
     body{
       margin:0; color:var(--ink);
       background:
@@ -33,12 +36,12 @@
 
     .container{ max-width:1000px; margin:0 auto; padding:24px; }
 
-    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
     .brand{ display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.2px; }
     .brand .dot{ width:14px; height:14px; border-radius:50%; background: conic-gradient(from 180deg, var(--pink), var(--lilac), var(--lime)); box-shadow:0 0 0 4px rgba(255,255,255,.6); }
 
     /* ===== Cards & layout ===== */
-    .card{ background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; border:3px solid #00000010; }
+    .card{ background:white; border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; border:3px solid #00000010; overflow:hidden; }
     .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
     @media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
 
@@ -47,15 +50,16 @@
     .help{ color:var(--muted); font-size:.85rem; }
 
     input[type="text"], input[type="url"], input[type="number"]{
-      width:100%; padding:12px 14px; border-radius:14px; border:2px solid #00000015; outline:none; background:#fff; color:var(--ink);
+      width:100%; max-width:100%; padding:12px 14px; border-radius:14px; border:2px solid #00000015; outline:none; background:#fff; color:var(--ink);
     }
     input::placeholder{ color:#9aa1b2; }
 
     .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .row > * { flex: 1 1 auto; }
+    .row > * { flex: 1 1 auto; min-width: 0; }
+    .row.inline > * { flex: 0 0 auto; }
 
     /* Checkboxes: align & joli */
-    .check{ display:flex; align-items:center; gap:10px; }
+    .check{ display:inline-flex; align-items:center; gap:10px; }
     .check input[type=checkbox]{
       appearance: none; width:20px; height:20px; border-radius:6px; border:2px solid #00000030; display:grid; place-items:center; background:white; cursor:pointer;
     }
@@ -107,7 +111,7 @@
 <body>
   <div class="container">
     <header>
-      <div class="brand"><span class="dot"></span> Blindtest <span style="font-weight:700;">Color Pop</span> ✨</div>
+      <div class="brand"><span class="dot"></span> Machu Testu ✨</div>
       <div id="authState" class="pill">🔒 Non connecté</div>
     </header>
 
@@ -116,18 +120,18 @@
         <div>
           <label for="clientId">🆔 Client ID Spotify (PKCE)</label>
           <input id="clientId" type="text" placeholder="ex: 1234567890abcdef1234567890abcd" autocomplete="off" />
-          <div class="row" style="margin-top:10px">
+          <div class="row inline" style="margin-top:10px">
             <button id="btnConnect" class="success">🔑 Se connecter</button>
             <button id="btnDisconnect" class="ghost" title="Oublier le token">♻️ Déconnexion</button>
           </div>
           <p class="help">Ajoute <strong>l’URL exacte</strong> de cette page dans les Redirect URIs de ton app Spotify. Le flux PKCE ne requiert pas de secret.</p>
 
-          <div class="row" style="margin-top:12px; align-items:center">
+          <div class="row inline" style="margin-top:12px; align-items:center">
             <label class="check"><input id="useSdk" type="checkbox" /> <span>🎧 Utiliser le Lecteur Spotify (Premium)</span></label>
-          </div>
-          <div class="row" style="margin-top:8px; align-items:center">
             <button id="btnInitPlayer" class="secondary" disabled>🖥️ Activer le lecteur web</button>
             <button id="btnAudioUnlock" class="ghost" disabled>🖱️ Débloquer l’audio</button>
+          </div>
+          <div class="row inline" style="margin-top:8px; align-items:center">
             <div id="playerState" class="pill">🛑 Lecteur inactif</div>
             <label class="help" style="margin-left:8px;">🔊</label>
             <input id="vol" type="range" min="0" max="1" step="0.01" value="1" disabled>
@@ -143,8 +147,8 @@
         <div>
           <label for="playlistUrl">📜 Lien de playlist Spotify</label>
           <input id="playlistUrl" type="url" placeholder="https://open.spotify.com/playlist/… ou spotify:playlist:…"/>
-          <div class="row" style="margin-top:10px">
-            <div>
+          <div class="row inline" style="margin-top:10px; align-items:center">
+            <div style="min-width:160px">
               <label for="maxTracks"># Titres max</label>
               <input id="maxTracks" type="number" min="1" max="50" value="50" />
             </div>
@@ -154,8 +158,8 @@
           <div id="playlistSummary" class="help" style="margin-top:10px"></div>
         </div>
       </div>
-      <div class="row" style="margin-top:12px">
-        <button id="btnStart" class="success" disabled>▶️ Démarrer le blindtest</button>
+      <div class="row inline" style="margin-top:12px">
+        <button id="btnStart" class="success" disabled>▶️ Démarrer</button>
       </div>
     </section>
 
@@ -223,6 +227,7 @@
     token_expires_at: 0,
     client_id: null,
     redirect_uri: location.origin + location.pathname,
+    scopes: [],
     playlist: null,
     tracks: [], // { title, artists, preview, cover, year, album, uri }
     i: 0,
@@ -246,7 +251,7 @@
   function placeholderCover(){ const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='${getComputedStyle(document.documentElement).getPropertyValue('--pink').trim()}'/><stop offset='1' stop-color='${getComputedStyle(document.documentElement).getPropertyValue('--lime').trim()}'/></linearGradient></defs><rect width='600' height='600' fill='${getComputedStyle(document.documentElement).getPropertyValue('--cream').trim()}'/><circle cx='300' cy='300' r='240' fill='url(#g)' opacity='0.35'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='system-ui,Segoe UI,Roboto,Arial' font-size='280' fill='#0E1321'>?</text></svg>`); return `data:image/svg+xml;charset=utf-8,${svg}`; }
 
   // ===== Auth storage/UI =====
-  function saveAuth(){ localStorage.setItem('spotify_auth', JSON.stringify({ access_token:state.access_token, refresh_token:state.refresh_token, token_expires_at:state.token_expires_at, client_id:state.client_id, redirect_uri:state.redirect_uri })); }
+  function saveAuth(){ localStorage.setItem('spotify_auth', JSON.stringify({ access_token:state.access_token, refresh_token:state.refresh_token, token_expires_at:state.token_expires_at, client_id:state.client_id, redirect_uri:state.redirect_uri, scopes: state.scopes })); }
   function loadAuth(){ try{ const saved=JSON.parse(localStorage.getItem('spotify_auth')||'{}'); if(saved.client_id) els.clientId.value = saved.client_id; Object.assign(state, saved); updateAuthUI(); }catch(e){} }
   function updateAuthUI(){ const ok = !!state.access_token && Date.now() < (state.token_expires_at||0); els.authState.textContent = ok? '✅ Connecté' : '🔒 Non connecté'; els.useSdk.disabled = !ok; els.btnInitPlayer.disabled = !ok; els.btnAudioUnlock.disabled = false; }
 
@@ -269,10 +274,15 @@
     const body = new URLSearchParams({ grant_type:'authorization_code', code, redirect_uri: state.redirect_uri, client_id: state.client_id || els.clientId.value.trim(), code_verifier: verifier });
     const res = await fetch('https://accounts.spotify.com/api/token', { method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body });
     if(!res.ok){ toast('Échec token. Vérifie Client ID & Redirect URI.'); return; }
-    const tok = await res.json(); state.access_token = tok.access_token; state.refresh_token = tok.refresh_token; state.token_expires_at = Date.now() + (tok.expires_in*1000 - 5000); saveAuth(); updateAuthUI(); toast('Connecté à Spotify ✅');
+    const tok = await res.json(); state.access_token = tok.access_token; state.refresh_token = tok.refresh_token; state.token_expires_at = Date.now() + (tok.expires_in*1000 - 5000); state.scopes = (tok.scope||'').split(' '); saveAuth(); updateAuthUI(); toast('Connecté à Spotify ✅');
   }
 
-  async function ensureToken(){ if(state.access_token && Date.now() < state.token_expires_at) return; if(!state.refresh_token) throw new Error('Pas de token. Connecte-toi.'); const body=new URLSearchParams({ grant_type:'refresh_token', refresh_token: state.refresh_token, client_id: state.client_id || els.clientId.value.trim() }); const res = await fetch('https://accounts.spotify.com/api/token',{ method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body }); if(!res.ok) throw new Error('Refresh token invalide'); const tok=await res.json(); state.access_token = tok.access_token; if(tok.refresh_token) state.refresh_token = tok.refresh_token; state.token_expires_at = Date.now() + (tok.expires_in*1000 - 5000); saveAuth(); updateAuthUI(); }
+  function hasPremiumScopes(){
+    const need=['streaming','user-modify-playback-state','user-read-playback-state','user-read-currently-playing'];
+    return need.every(s=>state.scopes.includes(s));
+  }
+
+  async function ensureToken(){ if(state.access_token && Date.now() < state.token_expires_at) return; if(!state.refresh_token) throw new Error('Pas de token. Connecte-toi.'); const body=new URLSearchParams({ grant_type:'refresh_token', refresh_token: state.refresh_token, client_id: state.client_id || els.clientId.value.trim() }); const res = await fetch('https://accounts.spotify.com/api/token',{ method:'POST', headers:{ 'Content-Type':'application/x-www-form-urlencoded' }, body }); if(!res.ok) throw new Error('Refresh token invalide'); const tok=await res.json(); state.access_token = tok.access_token; if(tok.refresh_token) state.refresh_token = tok.refresh_token; state.token_expires_at = Date.now() + (tok.expires_in*1000 - 5000); if(tok.scope) state.scopes = tok.scope.split(' '); saveAuth(); updateAuthUI(); }
 
   // ===== Spotify API helpers =====
   async function spGet(url){ await ensureToken(); const r=await fetch(url,{ headers:{ Authorization:`Bearer ${state.access_token}` } }); if(!r.ok) throw new Error('Spotify API '+r.status); return r.json(); }
@@ -282,6 +292,11 @@
   async function loadPlaylist(){
     try{
       els.btnLoad.disabled = true; state.usingSdk = !!els.useSdk.checked;
+      if(state.usingSdk && !hasPremiumScopes()){
+        toast('⚠️ Reconnecte-toi avec l’option Premium cochée (scopes manquants)');
+        els.playerState.textContent = '🟡 Scopes insuffisants';
+        state.usingSdk = false; // bascule sur previews pour éviter les skips
+      }
       const id = parsePlaylistId(els.playlistUrl.value); if(!id){ toast('URL de playlist invalide'); return; }
       const pl = await spGet(`https://api.spotify.com/v1/playlists/${id}?fields=name,images,external_urls.spotify`);
       state.playlist = { id, name: pl.name, images: pl.images||[], url: pl.external_urls?.spotify };
@@ -322,15 +337,16 @@
   async function initSdkPlayer(){
     try{
       if(!state.access_token){ toast('Connecte-toi à Spotify d\'abord'); return; }
+      if(!hasPremiumScopes()){ toast('⚠️ Token sans scopes Premium. Clique Déconnexion puis reconnecte-toi avec l’option Premium cochée.'); return; }
       if(state.sdkPlayer){ toast('Lecteur déjà prêt'); return; }
-      const player = new Spotify.Player({ name: 'Blindtest Web Player', getOAuthToken: cb => cb(state.access_token), volume: els.vol.valueAsNumber || 1 });
+      const player = new Spotify.Player({ name: 'Machu Testu — Web Player', getOAuthToken: cb => cb(state.access_token), volume: els.vol.valueAsNumber || 1 });
       state.sdkPlayer = player;
 
-      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = '🟢 Lecteur prêt'; els.btnReclaim.disabled = false; els.vol.disabled = true; /* volume via setVolume */ });
+      player.addListener('ready', ({ device_id }) => { state.device_id = device_id; els.playerState.textContent = '🟢 Lecteur prêt'; els.btnReclaim.disabled = false; els.vol.disabled = true; });
       player.addListener('not_ready', ({ device_id }) => { if(state.device_id===device_id) state.device_id=null; els.playerState.textContent = '🟠 Lecteur indisponible'; });
-      player.addListener('initialization_error', ({ message }) => logDebug('init_error', message));
-      player.addListener('authentication_error', ({ message }) => logDebug('auth_error', message));
-      player.addListener('account_error', ({ message }) => logDebug('account_error', message));
+      player.addListener('initialization_error', ({ message }) => { logDebug('init_error', message); toast('Init error: '+message); });
+      player.addListener('authentication_error', ({ message }) => { logDebug('auth_error', message); if(String(message).toLowerCase().includes('scope')) toast('⚠️ Scopes invalides. Déconnecte puis reconnecte-toi avec l’option Premium.'); });
+      player.addListener('account_error', ({ message }) => { logDebug('account_error', message); toast('Compte non Premium ou erreur: '+message); });
       player.addListener('player_state_changed', (st) => logDebug('state', st));
 
       const ok = await player.connect();
@@ -420,7 +436,7 @@
 
   function nextTrack(){ stopAll(); state.i++; updateCounter(); if(state.i < state.tracks.length){ playCurrent(); } else { finish(); } }
 
-  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"title\">🎉 Fin du blindtest</div><div class=\"subtitle\">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class=\"meta\" style=\"margin-top:12px\">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
+  function finish(){ stopAll(); setProgress(1); els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"title\">🎉 Fin — Machu Testu</div><div class=\"subtitle\">${state.playlist?.name||'Playlist'} — ${state.tracks.length} titre(s)</div><div class=\"meta\" style=\"margin-top:12px\">Relance avec « Recommencer » ou choisis une autre playlist.</div></div>`; }
 
   function renderIntro(){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Playlist cover\" src=\"${state.playlist?.images?.[0]?.url||placeholderCover()}\"></div><div><div class=\"subtitle\">🚦 Prêt·e ?</div><div class=\"title\">${escapeHTML(state.playlist?.name||'Ta playlist')}</div><div class=\"rules\"><div>🕒 Intro 10s • Puis 10s d\'écoute / 10s de réponse par titre</div><div>🏆 1 point par <strong>artiste</strong> + 1 point par <strong>titre</strong></div><div>🎵 Jusqu\'à ${state.tracks.length} titre(s)</div></div></div>`; }
   function renderGuess(t){ els.screen.innerHTML = `<div class=\"cover\"><img alt=\"Cover masquée\" src=\"${placeholderCover()}\"></div><div><div class=\"subtitle\">Extrait ${state.i+1}/${state.tracks.length} — 10 secondes</div><div class=\"title\">❓❓❓</div><div class=\"meta\">Trouve l\'artiste et le titre</div></div>`; }
@@ -432,12 +448,12 @@
 
   // ===== Événements UI =====
   els.connect.addEventListener('click', beginAuth);
-  els.disconnect.addEventListener('click', ()=>{ state.access_token=null; state.refresh_token=null; state.token_expires_at=0; saveAuth(); updateAuthUI(); toast('Jeton supprimé'); });
+  els.disconnect.addEventListener('click', ()=>{ state.access_token=null; state.refresh_token=null; state.token_expires_at=0; state.scopes=[]; saveAuth(); updateAuthUI(); toast('Jeton supprimé'); });
   els.btnLoad.addEventListener('click', loadPlaylist);
   els.btnStart.addEventListener('click', startGame);
   els.btnSkip.addEventListener('click', nextTrack);
   els.btnRestart.addEventListener('click', ()=>{ stopAll(); els.setup.classList.remove('hidden'); els.stage.classList.add('hidden'); setProgress(0); });
-  els.useSdk.addEventListener('change', ()=>{ if(els.useSdk.checked){ toast('Mode Premium activé — pense à « Activer le lecteur web »'); } });
+  els.useSdk.addEventListener('change', ()=>{ if(els.useSdk.checked){ toast('Mode Premium activé — clique « Se connecter » pour obtenir les scopes.'); } });
   els.btnInitPlayer.addEventListener('click', initSdkPlayer);
 
   // ===== Init =====
