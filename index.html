@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Machu Testu — Premium Only</title>
   <meta name="description" content="Blindtest Spotify Premium (Web Playback SDK). UI guidée, 50 titres max, timings 10s/10s, design Color Pop." />
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="container">
@@ -67,4 +67,38 @@
             <label class="check"><input id="shuffle" type="checkbox" /> <span>🔀 Mélanger l’ordre</span></label>
             <button id="btnLoad" class="secondary">📥 Charger</button>
           </div>
-          <div id="playlistSummary" class="help" style="margin-top:10px
+          <div id="playlistSummary" class="help" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <div class="row inline" style="margin-top:12px; justify-content:space-between">
+        <div class="help">
+          Astuce : le bouton <strong>▶️ Lancer</strong> déclenche tout (activation lecteur + autorisation audio via ton clic).
+        </div>
+        <button id="btnStart" class="success" disabled>▶️ Lancer</button>
+      </div>
+    </section>
+
+    <!-- Scène de jeu -->
+    <section id="stage" class="card hidden" aria-live="polite">
+      <div class="stage-header">
+        <div class="pill" id="playlistName">🎶 Playlist</div>
+        <div class="pill" id="counter">0 / 0</div>
+      </div>
+      <div class="progress" aria-label="Progression"><div class="bar" id="progressBar"></div></div>
+      <div class="screen" id="screen" style="margin:16px 0 12px"></div>
+      <div class="controls">
+        <button id="btnSkip" class="secondary">⏭️ Suivant</button>
+        <button id="btnRestart" class="ghost">🔁 Recommencer</button>
+      </div>
+      <audio id="player" preload="auto"></audio>
+    </section>
+
+    <div id="toast" class="toast hidden">Info</div>
+  </div>
+
+  <!-- SDK Spotify -->
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+  <script defer src="./assets/app.js"></script>
+</body>
+</html>
