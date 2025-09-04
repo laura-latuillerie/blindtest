@@ -72,9 +72,7 @@
       </div>
 
       <div class="row inline" style="margin-top:12px; justify-content:space-between">
-        <div class="help">
-          Astuce : le bouton <strong>▶️ Lancer</strong> déclenche tout (activation lecteur + autorisation audio via ton clic).
-        </div>
+        <div class="help">Astuce : le bouton <strong>▶️ Lancer</strong> déclenche tout.</div>
         <button id="btnStart" class="success" disabled>▶️ Lancer</button>
       </div>
     </section>
@@ -93,6 +91,30 @@
       </div>
       <audio id="player" preload="auto"></audio>
     </section>
+
+    <section id="stage" class="card hidden" aria-live="polite">
+  <div class="stage-header">
+    <div class="pill" id="playlistName">🎶 Playlist</div>
+    <div class="pill" id="counter">0 / 0</div>
+  </div>
+
+  <div class="progress" aria-label="Progression">
+    <div class="bar" id="progressBar"></div>
+  </div>
+
+  <!-- Compte à rebours géant (affiché sur les 5 dernières secondes de la phase “devine”) -->
+  <div id="countdown" class="countdown hidden" aria-hidden="true">5</div>
+
+  <div class="screen" id="screen" style="margin:16px 0 12px"></div>
+
+  <div class="controls">
+    <button id="btnSkip" class="secondary">⏭️ Suivant</button>
+    <button id="btnRestart" class="ghost">🔁 Recommencer</button>
+  </div>
+
+  <audio id="player" preload="auto"></audio>
+</section>
+
 
     <div id="toast" class="toast hidden">Info</div>
   </div>
