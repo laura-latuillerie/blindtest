@@ -1,126 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Machu Testu — Premium Only</title>
-  <meta name="description" content="Blindtest Spotify Premium (Web Playback SDK). UI guidée, 50 titres max, timings 10s/10s, design Color Pop." />
-  <link rel="stylesheet" href="./assets/styles.css" />
+  <title>Machu Testu</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand"><span class="dot"></span> Machu Testu ✨</div>
-      <div id="authState" class="pill">🔒 Non connecté</div>
-    </header>
+  <h1>Machu Testu 🎵</h1>
+  <button id="login">Se connecter à Spotify</button>
+  <button id="start" style="display:none;">Commencer le test</button>
 
-    <!-- Bandeau d'étapes -->
-    <section class="card" style="margin-bottom:10px">
-      <div class="row inline" style="justify-content:space-between">
-        <div class="pill" id="stepConn">1) Connexion : <strong>❌</strong></div>
-        <div class="pill" id="stepPlayer">2) Lecteur web : <strong>🛑</strong></div>
-        <div class="pill" id="stepPl">3) Playlist : <strong>⏳</strong></div>
-        <div class="pill" id="stepReady">4) Prêt : <strong>⏳</strong></div>
-      </div>
-    </section>
-
-    <!-- Panneau de setup -->
-    <section id="setup" class="card" aria-label="Configuration">
-      <div class="grid">
-        <div>
-          <label for="clientId">🆔 Client ID Spotify (PKCE)</label>
-          <input id="clientId" type="text" placeholder="ex: 1234567890abcdef1234567890abcd" autocomplete="off" />
-          <div class="row inline" style="margin-top:10px">
-            <button id="btnConnect" class="success">🔑 Se connecter (Premium)</button>
-            <button id="btnDisconnect" class="ghost">♻️ Déconnexion</button>
-          </div>
-          <p class="help">
-            Cette app fonctionne en <strong>Premium uniquement</strong>. Les previews 30s ne servent qu’en <strong>secours</strong> si le lecteur web refuse un titre.
-          </p>
-
-          <div class="row inline" style="margin-top:10px; align-items:center">
-            <button id="btnInitPlayer" class="secondary" disabled>🖥️ Activer le lecteur web</button>
-            <button id="btnReclaim" class="ghost" disabled>🛰️ Reprendre le contrôle</button>
-          </div>
-          <div class="row inline" style="margin-top:6px; align-items:center">
-            <div id="playerState" class="pill">🛑 Lecteur inactif</div>
-            <label class="help" style="margin-left:8px;">🔊</label>
-            <input id="vol" type="range" min="0" max="1" step="0.01" value="1" disabled>
-          </div>
-
-          <details class="debug" style="margin-top:10px">
-            <summary>🔍 Diagnostic lecteur</summary>
-            <pre id="debug"></pre>
-          </details>
-
-          <div id="banner" class="help" style="margin-top:10px; font-weight:800;"></div>
-        </div>
-
-        <div>
-          <label for="playlistUrl">📜 Lien de playlist Spotify</label>
-          <input id="playlistUrl" type="url" placeholder="https://open.spotify.com/playlist/… ou spotify:playlist:…" />
-          <div class="row inline" style="margin-top:10px; align-items:center">
-            <div style="min-width:160px">
-              <label for="maxTracks"># Titres max</label>
-              <input id="maxTracks" type="number" min="1" max="50" value="50" />
-            </div>
-            <label class="check"><input id="shuffle" type="checkbox" /> <span>🔀 Mélanger l’ordre</span></label>
-            <button id="btnLoad" class="secondary">📥 Charger</button>
-          </div>
-          <div id="playlistSummary" class="help" style="margin-top:10px"></div>
-        </div>
-      </div>
-
-      <div class="row inline" style="margin-top:12px; justify-content:space-between">
-        <div class="help">Astuce : le bouton <strong>▶️ Lancer</strong> déclenche tout.</div>
-        <button id="btnStart" class="success" disabled>▶️ Lancer</button>
-      </div>
-    </section>
-
-    <!-- Scène de jeu -->
-    <section id="stage" class="card hidden" aria-live="polite">
-      <div class="stage-header">
-        <div class="pill" id="playlistName">🎶 Playlist</div>
-        <div class="pill" id="counter">0 / 0</div>
-      </div>
-      <div class="progress" aria-label="Progression"><div class="bar" id="progressBar"></div></div>
-      <div class="screen" id="screen" style="margin:16px 0 12px"></div>
-      <div class="controls">
-        <button id="btnSkip" class="secondary">⏭️ Suivant</button>
-        <button id="btnRestart" class="ghost">🔁 Recommencer</button>
-      </div>
-      <audio id="player" preload="auto"></audio>
-    </section>
-
-    <section id="stage" class="card hidden" aria-live="polite">
-  <div class="stage-header">
-    <div class="pill" id="playlistName">🎶 Playlist</div>
-    <div class="pill" id="counter">0 / 0</div>
+  <div id="game" style="display:none;">
+    <audio id="player" controls></audio>
+    <div id="choices"></div>
+    <p id="result"></p>
   </div>
 
-  <div class="progress" aria-label="Progression">
-    <div class="bar" id="progressBar"></div>
-  </div>
-
-  <!-- Compte à rebours géant (affiché sur les 5 dernières secondes de la phase “devine”) -->
-  <div id="countdown" class="countdown hidden" aria-hidden="true">5</div>
-
-  <div class="screen" id="screen" style="margin:16px 0 12px"></div>
-
-  <div class="controls">
-    <button id="btnSkip" class="secondary">⏭️ Suivant</button>
-    <button id="btnRestart" class="ghost">🔁 Recommencer</button>
-  </div>
-
-  <audio id="player" preload="auto"></audio>
-</section>
-
-
-    <div id="toast" class="toast hidden">Info</div>
-  </div>
-
-  <!-- SDK Spotify -->
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
-  <script defer src="./assets/app.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
